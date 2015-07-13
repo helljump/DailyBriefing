@@ -13,6 +13,7 @@ import android.net.Uri;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.text.format.DateFormat;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,13 +21,14 @@ import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.Switch;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 
-public class MainActivity extends ActionBarActivity implements TimePicker.OnTimeChangedListener, CompoundButton.OnCheckedChangeListener {
+public class MainActivity extends ActionBarActivity implements CompoundButton.OnCheckedChangeListener {
 
     private static final String TAG = "MainActivity";
 
@@ -47,7 +49,6 @@ public class MainActivity extends ActionBarActivity implements TimePicker.OnTime
         sw = (Switch) findViewById(R.id.swActive);
         sw.setOnCheckedChangeListener(this);
         tp = (TimePicker) findViewById(R.id.tpTime);
-        tp.setOnTimeChangedListener(this);
         tp.setIs24HourView(DateFormat.is24HourFormat(this));
 
         sharedPref = getPreferences(Context.MODE_PRIVATE);
@@ -65,13 +66,6 @@ public class MainActivity extends ActionBarActivity implements TimePicker.OnTime
 
     @Override
     protected void onPause() {
-        Intent in = new Intent(this, MyIntentService.class);
-        PendingIntent pin = PendingIntent.getService(this, 0, in, 0);
-        AlarmManager alarm = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
-        alarm.cancel(pin);
-        if(sharedPref.getBoolean(ACTIVE, false)) {
-            alarm.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 10000, pin);
-        }
         super.onPause();
     }
 
@@ -98,17 +92,22 @@ public class MainActivity extends ActionBarActivity implements TimePicker.OnTime
     }
 
     @Override
-    public void onTimeChanged(TimePicker view, int hourOfDay, int minute) {
-        Log.d(TAG, "time to " + hourOfDay + ":" + minute);
-        prefsEditor.putInt(HOUROFDAY, hourOfDay);
-        prefsEditor.putInt(MINUTE, minute);
-        prefsEditor.commit();
-    }
-
-    @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         Log.d(TAG, "active " + isChecked);
         prefsEditor.putBoolean(ACTIVE, isChecked);
         prefsEditor.commit();
+
+        //TODO: запуск сервиса по таймеру
+
+        Intent in = new Intent(this, MyIntentService.class);
+        PendingIntent pin = PendingIntent.getService(this, 0, in, 0);
+        AlarmManager alarm = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+        alarm.cancel(pin);
+        if(isChecked) {
+            alarm.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), DateUtils.DAY_IN_MILLIS, pin);
+            Toast.makeText(getBaseContext(), "Service is enabled", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(getBaseContext(), "Service is disabled", Toast.LENGTH_SHORT).show();
+        }
     }
 }

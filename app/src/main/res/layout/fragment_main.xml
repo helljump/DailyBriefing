@@ -7,7 +7,7 @@
 
 
     <Switch
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Monitoring"
         android:id="@+id/swActive"
@@ -17,7 +17,7 @@
         android:checked="true" />
 
     <TimePicker
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/tpTime"
         android:layout_below="@+id/swActive"

@@ -10,7 +10,6 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:theme="@style/MyTheme" >
-
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name" >
@@ -20,6 +19,14 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".MyIntentService"
+            android:exported="false" >
+            <intent-filter>
+                <action android:name="ru.zipta.dailybriefing.action.NOTIFY"/>
+            </intent-filter>
+        </service>
 
     </application>
 

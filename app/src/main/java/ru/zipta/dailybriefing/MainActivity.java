@@ -2,8 +2,11 @@ package ru.zipta.dailybriefing;
 
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.text.format.DateFormat;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.DatePicker;
+import android.widget.TimePicker;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -12,6 +15,8 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        TimePicker tp = (TimePicker) findViewById(R.id.tpTime);
+        tp.setIs24HourView(DateFormat.is24HourFormat(this));
     }
 
 

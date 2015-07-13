@@ -5,10 +5,24 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivityFragment">
 
-    <TextView android:text="@string/hello_world" android:layout_width="wrap_content"
+
+    <Switch
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true"
-        android:id="@+id/hwtext" />
+        android:text="Monitoring"
+        android:id="@+id/swActive"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:checked="true" />
+
+    <TimePicker
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/tpTime"
+        android:layout_below="@+id/swActive"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:timePickerMode="spinner" />
 
 </RelativeLayout>

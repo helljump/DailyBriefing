@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 
@@ -39,20 +40,30 @@ public class MainActivityFragment extends Fragment {
         Context context = this.getActivity().getBaseContext();
         ContentResolver cr = context.getContentResolver();
 
+        Date now = new Date();
+
+        Calendar c = Calendar.getInstance();
+        c.setTime(now);
+        long today = c.getTime().getTime();
+        c.add(Calendar.DATE, 1);
+        long tomorrow = c.getTime().getTime();
+
         //gtasks
 
         Cursor cursor;
 
-        cursor = cr.query(TASKS_URI, null, null, new String[]{"-1", "true"}, null);
+        cursor = cr.query(TASKS_URI, null, null, new String[]{"-1", "false"}, null);
 
         String title = null;
-        Date date = null;
+        Long date;
 
         if (cursor != null) {
             while (cursor.moveToNext()) {
                 title = cursor.getString(GT_TITLE);
-                date = new Date(cursor.getLong(GT_DATE));
-                Log.d(TAG, "gtasks title: " + title + " date " + date.toString());
+                date = cursor.getLong(GT_DATE);
+                if (date < today) {
+                    Log.d(TAG, "gtasks title: " + title + " date " + date.toString());
+                }
             }
         } else {
             Log.d(TAG, "no tasks");
@@ -81,19 +92,16 @@ public class MainActivityFragment extends Fragment {
 
         for (String id : calendarIds) {
 
-            long now = new Date().getTime();
-            long tomorrow = now + DateUtils.DAY_IN_MILLIS * 8;
-
             cursor = cr.query(EVENTS_URI, new String[]{"title", "dtstart", "dtend", "allDay"},
-                    "dtstart>=" + now
+                    "dtstart>=" + today
                             //+ " and dtend<" + tomorrow
                             + " and calendar_id=" + id, null, null);
 
             if (cursor != null) {
                 while (cursor.moveToNext()) {
                     title = cursor.getString(0);
-                    date = new Date(cursor.getLong(1));
-                    Log.d(TAG, "calendar title: " + title + " date " + date.toString());
+                    date = cursor.getLong(1);
+                    //Log.d(TAG, "calendar title: " + title + " date " + date.toString());
                 }
             } else {
                 Log.d(TAG, "no events");
@@ -103,8 +111,6 @@ public class MainActivityFragment extends Fragment {
             cursor.close();
 
         }
-
-
 
         return inflater.inflate(R.layout.fragment_main, container, false);
     }

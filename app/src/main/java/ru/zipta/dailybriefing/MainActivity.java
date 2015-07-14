@@ -12,6 +12,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.text.format.DateFormat;
 import android.text.format.DateUtils;
 import android.util.Log;
@@ -28,7 +29,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 
-public class MainActivity extends ActionBarActivity implements CompoundButton.OnCheckedChangeListener {
+public class MainActivity extends AppCompatActivity implements CompoundButton.OnCheckedChangeListener {
 
     private static final String TAG = "MainActivity";
 
@@ -37,7 +38,7 @@ public class MainActivity extends ActionBarActivity implements CompoundButton.On
     public static final String ACTIVE = "ACTIVE";
 
     SharedPreferences sharedPref;
-    private SharedPreferences.Editor prefsEditor;
+
     private TimePicker tp;
     private Switch sw;
 
@@ -52,13 +53,11 @@ public class MainActivity extends ActionBarActivity implements CompoundButton.On
         tp.setIs24HourView(DateFormat.is24HourFormat(this));
 
         sharedPref = getPreferences(Context.MODE_PRIVATE);
-        prefsEditor = sharedPref.edit();
-
     }
 
     @Override
-    protected void onStart() {
-        super.onStart();
+    protected void onResume() {
+        super.onResume();
         tp.setCurrentHour(sharedPref.getInt(HOUROFDAY, 9));
         tp.setCurrentMinute(sharedPref.getInt(MINUTE, 0));
         sw.setChecked(sharedPref.getBoolean(ACTIVE, false));
@@ -94,17 +93,26 @@ public class MainActivity extends ActionBarActivity implements CompoundButton.On
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
         Log.d(TAG, "active " + isChecked);
-        prefsEditor.putBoolean(ACTIVE, isChecked);
-        prefsEditor.commit();
 
-        //TODO: запуск сервиса по таймеру
+        SharedPreferences.Editor prefsEditor = sharedPref.edit();
+
+        prefsEditor.putBoolean(ACTIVE, isChecked);
+        prefsEditor.putInt(HOUROFDAY, tp.getCurrentHour());
+        prefsEditor.putInt(MINUTE, tp.getCurrentMinute());
+        prefsEditor.apply();
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        calendar.set(Calendar.HOUR_OF_DAY, tp.getCurrentHour());
+        calendar.set(Calendar.MINUTE, tp.getCurrentMinute());
 
         Intent in = new Intent(this, MyIntentService.class);
         PendingIntent pin = PendingIntent.getService(this, 0, in, 0);
-        AlarmManager alarm = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+        AlarmManager alarm = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         alarm.cancel(pin);
         if(isChecked) {
-            alarm.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), DateUtils.DAY_IN_MILLIS, pin);
+            alarm.setInexactRepeating(
+                    AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pin);
             Toast.makeText(getBaseContext(), "Service is enabled", Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(getBaseContext(), "Service is disabled", Toast.LENGTH_SHORT).show();
